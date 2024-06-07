@@ -16,6 +16,7 @@ class NeedHelp(commands.Cog):
         1129427584216743966,  # BDA de FlashBack
         1247880599046459420   # Serveur test
     ]
+    channel_log_id = -1  # Log
     temporary_channels = []
 
     def __init__(self, bot):
@@ -27,6 +28,9 @@ class NeedHelp(commands.Cog):
             return
         channel_name = f"🚨・BDA de {member.display_name}"
         if after.channel and after.channel.id in self.channel_id:  # ID Channel BDA
+            if self.channel_log_id != -1:
+                await bot.get_channel(self.channel_log_id).send(f"{member.display_name} a créé une BDA")
+
             # Copy
             temp_channel = await after.channel.clone(name=channel_name)
             self.temporary_channels.append(temp_channel.id)
@@ -43,6 +47,12 @@ class NeedHelp(commands.Cog):
         if before.channel and before.channel.id in self.temporary_channels and not before.channel.members:
             self.temporary_channels.remove(before.channel.id)
             await before.channel.delete()
+
+        ## Join BDA
+        if after.channel and after.channel.id in self.temporary_channels:
+            if self.channel_log_id != -1:
+                await bot.get_channel(self.channel_log_id).send(f"{member.display_name} a rejoint une BDA")
+
 
 # Admin commands
 @bot.tree.command(name="nhc", description="Configuration des BDA")
@@ -67,12 +77,29 @@ async def slash_command(interaction: discord.Interaction, channel_id: str):
         await interaction.response.send_message("Vous n'avez pas la permission d'utiliser cette commande")
 
 
+@bot.tree.command(name="nhl", description="Logs des BDA")
+async def slash_command(interaction: discord.Interaction, channel_id: str):
+    if interaction.user.guild_permissions.administrator:
+        # Verify if the channel exists
+        channel = bot.get_channel(int(channel_id))
+        if (len(category_id) != 18 and len(category_id) != 19) or not category_id.isdigit():
+            await interaction.response.send_message("L'ID de la catégorie est incorrect")
+            return
+
+        await channel.send("Le salon des logs BDA est maintenant : <#" + channel_id + ">")
+
+        # Convert string to int
+        NeedHelp.channel_log_id = int(channel_id)
+    else:
+        await interaction.response.send_message("Vous n'avez pas la permission d'utiliser cette commande")
+
+
 # Admin commands
 @bot.tree.command(name="nhd", description="Suppression des BDA")
 async def slash_command(interaction: discord.Interaction, category_id: str):
     if interaction.user.guild_permissions.administrator:
         # If not length 19 and not only number
-        if (len(category_id) != 18 and len(category_id) != 19) or not category_id.isdigit():
+        if len(category_id) != 19 or not category_id.isdigit():
             await interaction.response.send_message("L'ID de la catégorie est incorrect")
             return
 
