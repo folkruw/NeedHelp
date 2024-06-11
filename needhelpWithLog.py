@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-TOKEN = "MTI0Nzg4MTI2NDQxODI2MzEyMQ.GIyQxl.aC7h7l55MjrcM4gnId3tzolGm9TZiezxDUUV1o"
+TOKEN = ""
 
 intents = discord.Intents.default()
 intents.guilds = True
